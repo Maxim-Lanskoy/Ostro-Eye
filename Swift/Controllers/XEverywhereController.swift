@@ -25,7 +25,6 @@ final class EverywhereController {
         await bot.dispatcher.add(TGBaseHandler({ update in
             let unsafeMessage = update.message ?? update.editedMessage
             guard let message = unsafeMessage, let text = message.text, let fromId = unsafeMessage?.from else { return }
-            guard let chatId = update.editedMessage?.chat ?? update.message?.chat else { return }
             let session = try await User.session(for: fromId, db: app.db)
             let containsEnergy = text.contains("🔋")
             let containsHealth = text.contains("❤️")
@@ -35,18 +34,20 @@ final class EverywhereController {
                 let adjustedStamp = Calendar.current.date(byAdding: .hour, value: 3, to: stamp) ?? stamp
                 let lastProfileUnsafe = session.profiles.last
                 let tuple = try await session.updateProfile(from: text, date: adjustedStamp, db: app.db)
+                let delete = TGDeleteMessageParams(chatId: .chat(message.chat.id), messageId: message.messageId)
                 guard let newProfile = tuple.profile else {
                     let error = tuple.error ?? "❌ Помилка при оновленні профілю. Перевірте формат."
-                    try await bot.sendMessage(chat: chatId, text: error, parseMode: .html)
+                    _ = try? await bot.deleteMessage(params: delete)
+                    try await bot.sendMessage(chat: message.chat, text: error, parseMode: .html)
                     return
                 }
                 if let lastProfile = lastProfileUnsafe {
                     let compare = Profile.compareProfiles(old: lastProfile, new: newProfile)
-                    let delete = TGDeleteMessageParams(chatId: .chat(chatId.id), messageId: message.messageId)
                     _ = try? await bot.deleteMessage(params: delete)
-                    try await bot.sendMessage(chat: chatId, text: compare, parseMode: .html)
+                    try await bot.sendMessage(chat: message.chat, text: compare, parseMode: .html)
                 } else {
-                    try await bot.sendMessage(chat: chatId, text: "🙌 Профіль збережено!", parseMode: .html)
+                    _ = try? await bot.deleteMessage(params: delete)
+                    try await bot.sendMessage(chat: message.chat, text: "🙌 Профіль збережено!", parseMode: .html)
                 }
             }
         }))
