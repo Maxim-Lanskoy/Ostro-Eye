@@ -17,6 +17,8 @@ let superAdmins: [Int64]  = [owner]
 
 // MARK: - Setting up Vapor Application.
 public func configure(_ app: Application) async throws {
+    
+    app.http.server.configuration.port = 1337
 
     let projectPath: String = "/home/rpi5/Ostro-Eye"
     app.directory = DirectoryConfiguration(workingDirectory: projectPath)
