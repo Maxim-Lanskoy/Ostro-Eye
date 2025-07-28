@@ -334,13 +334,8 @@ extension Profile {
         return lhs.name == rhs.name &&
                lhs.level == rhs.level &&
                lhs.guild == rhs.guild &&
-               lhs.currentHealth == rhs.currentHealth &&
                lhs.maxHealth == rhs.maxHealth &&
-               lhs.healthRegenMinutes == rhs.healthRegenMinutes &&
-               lhs.currentEnergy == rhs.currentEnergy &&
                lhs.maxEnergy == rhs.maxEnergy &&
-               lhs.energyRegenMinutes == rhs.energyRegenMinutes &&
-               lhs.energySpentToday == rhs.energySpentToday &&
                lhs.attack == rhs.attack &&
                lhs.defense == rhs.defense &&
                lhs.heroPower == rhs.heroPower &&
@@ -348,4 +343,89 @@ extension Profile {
                lhs.nextLevelExperience == rhs.nextLevelExperience &&
                lhs.gold == rhs.gold
     }    
+}
+
+extension Profile {
+    
+    /// Calculate an estimate of days needed to reach the next level based on the history of profiles.
+    /// Returns the number of days (as an Int, rounded up) or nil if not enough data.
+    func estimateDaysToLevelUp(history: [Profile]) -> Int? {
+        guard history.count >= 2 else {
+            return nil // Need at least two data points to estimate progress
+        }
+        // Sort history by timestamp (oldest first)
+        let sorted = history.sorted(by: { $0.timestamp < $1.timestamp })
+        guard let firstProfile = sorted.first, let latestProfile = sorted.last else {
+            return nil
+        }
+        // Calculate days between the oldest and newest record
+        let timeInterval = latestProfile.timestamp.timeIntervalSince(firstProfile.timestamp)
+        let daysInterval = timeInterval / (60 * 60 * 24)  // convert seconds to days
+        guard daysInterval > 0 else {
+            return nil
+        }
+        // Calculate total experience gained between the two snapshots
+        let xpGained = totalXPGained(from: firstProfile, to: latestProfile)
+        guard xpGained > 0 else {
+            return nil // no XP gained, cannot estimate
+        }
+        let xpPerDay = Double(xpGained) / daysInterval
+        if xpPerDay <= 0 {
+            return nil
+        }
+        // XP remaining to next level from the latest profile
+        let remainingXP = latestProfile.nextLevelExperience - latestProfile.currentExperience
+        if remainingXP <= 0 {
+            return 0  // already leveled up (or at cap)
+        }
+        // Days needed = remaining XP / (XP per day)
+        let rawDaysNeeded = Double(remainingXP) / xpPerDay
+        // Round up to the next whole day, since partial days count as a full day of waiting
+        let daysNeeded = Int(ceil(rawDaysNeeded))
+        return daysNeeded
+    }
+
+    /// Helper to calculate total XP gained from an older profile to a newer profile, accounting for level-ups.
+    private func totalXPGained(from oldProfile: Profile, to newProfile: Profile) -> Int {
+        // If levels are the same
+        if newProfile.level == oldProfile.level {
+            return newProfile.currentExperience - oldProfile.currentExperience
+        }
+        // If the new profile is at a higher level than the old profile
+        var xpGained = 0
+        // XP to finish the oldProfile's level
+        xpGained += (oldProfile.nextLevelExperience - oldProfile.currentExperience)
+        // If difference in level is more than 1, add full thresholds for intermediate levels.
+        if newProfile.level > oldProfile.level + 1 {
+            for lvl in (oldProfile.level + 1)..<newProfile.level {
+                xpGained += xpThreshold(forLevel: lvl)  // full XP needed for each intermediate level
+            }
+        }
+        // Add XP gained in the current level of newProfile
+        xpGained += newProfile.currentExperience
+        return xpGained
+    }
+
+    /// Estimate the XP threshold for reaching the next level at a given level.
+    /// This uses known values for level 10 and 11 and assumes a pattern of increase.
+    /// In the actual game, these values might be static or follow a formula.
+    private func xpThreshold(forLevel level: Int) -> Int {
+        // Known examples: Level 10->11: 20000, Level 11->12: 30000.
+        // We'll assume that each level increases the required XP by +10000 for simplicity.
+        // (This may need adjustment if the game uses a different progression.)
+        switch level {
+        case 10: return 20000  // XP needed from level 10 to 11
+        case 11: return 30000  // XP needed from level 11 to 12
+        default:
+            // For higher levels, assume +10000 each level beyond 11
+            let level10Threshold = 20000
+            let baseIncrement = 10000
+            if level <= 10 {
+                return level10Threshold  // fallback
+            }
+            // Example: level=12 -> 40000, 13 -> 50000, etc.
+            let extraLevels = level - 11
+            return 30000 + extraLevels * baseIncrement
+        }
+    }
 }

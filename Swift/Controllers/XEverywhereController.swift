@@ -42,6 +42,8 @@ final class EverywhereController {
                 }
                 if let lastProfile = lastProfileUnsafe {
                     let compare = Profile.compareProfiles(old: lastProfile, new: newProfile)
+                    let delete = TGDeleteMessageParams(chatId: .chat(chatId.id), messageId: message.messageId)
+                    _ = try? await bot.deleteMessage(params: delete)
                     try await bot.sendMessage(chat: chatId, text: compare, parseMode: .html)
                 } else {
                     try await bot.sendMessage(chat: chatId, text: "🙌 Профіль збережено!", parseMode: .html)
