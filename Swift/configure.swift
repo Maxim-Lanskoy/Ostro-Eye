@@ -18,7 +18,7 @@ let superAdmins: [Int64]  = [owner]
 // MARK: - Setting up Vapor Application.
 public func configure(_ app: Application) async throws {
 
-    let projectPath: String = "/Users/maximlanskoy/Ostro-Eye"
+    let projectPath: String = "/home/rpi5/Ostro-Eye"
     app.directory = DirectoryConfiguration(workingDirectory: projectPath)
     try Dotenv.configure(atPath: "\(projectPath)/.env", overwrite: false)
     

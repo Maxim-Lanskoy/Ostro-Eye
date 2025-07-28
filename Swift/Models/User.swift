@@ -71,7 +71,7 @@ final public class User: Model, @unchecked Sendable {
     
     func updateProfile(from message: String, date: Date, db: any Database) async throws -> ProfileTyple {
         if let profile = Profile(from: message, timestamp: date) {
-            if self.profiles.contains(profile) {
+            if self.profiles.contains(where: {$0 == profile}) {
                 return (nil, "⚠️ Такий профіль вже збережено.")
             }
             self.profiles.append(profile)

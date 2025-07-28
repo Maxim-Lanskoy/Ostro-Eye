@@ -212,76 +212,76 @@ struct Profile: Codable, Equatable {
         
         // Level comparison
         if new.level != old.level {
-            resultLines.append("⚔️ Level: \(old.level) → \(new.level) \(new.level > old.level ? "⬆️" : "⬇️")")
+            resultLines.append("⚔️ Рівень: \(old.level) → \(new.level) \(new.level > old.level ? "⬆️" : "⬇️")")
         } else {
-            resultLines.append("⚔️ Level: \(new.level) (no change)")
+            resultLines.append("⚔️ Рівень: \(new.level) (без змін)")
         }
         
         // Experience comparison
         if new.level == old.level {
             // Same level: show XP progress difference
             let xpDiff = new.currentExperience - old.currentExperience
-            let progressLine = "✨ Experience: \(old.currentExperience)/\(old.nextLevelExperience) → \(new.currentExperience)/\(new.nextLevelExperience)"
+            let progressLine = "✨ Досвід: \(old.currentExperience)/\(old.nextLevelExperience) → \(new.currentExperience)/\(new.nextLevelExperience)"
             if xpDiff != 0 {
                 let sign = xpDiff > 0 ? "+" : ""
                 resultLines.append(progressLine + " (\(sign)\(xpDiff) XP)")
             } else {
-                resultLines.append(progressLine + " (no change)")
+                resultLines.append(progressLine + " (без змін)")
             }
         } else if new.level == old.level + 1 {
             // Leveled up once:
             let xpEarnedToLevel = old.nextLevelExperience - old.currentExperience  // XP to finish old level
             let xpInNewLevel = new.currentExperience
             let totalXP = xpEarnedToLevel + xpInNewLevel
-            resultLines.append("✨ Experience: Leveled up from \(old.level) to \(new.level)! Gained \(totalXP) XP (now \(new.currentExperience)/\(new.nextLevelExperience) into level \(new.level)).")
+            resultLines.append("✨ Досвід: Рівень підвищено з \(old.level) до \(new.level)! Набрано \(totalXP) XP (зараз \(new.currentExperience)/\(new.nextLevelExperience) до рівня \(new.level)).")
         } else if new.level > old.level {
             // Leveled up multiple times (rare within short interval, but handle it)
-            resultLines.append("✨ Experience: Leveled up from \(old.level) to \(new.level)! (Multiple level-ups)")
-            resultLines.append("   Current XP: \(new.currentExperience)/\(new.nextLevelExperience) at level \(new.level).")
+            resultLines.append("✨ Досвід: Рівень підвищено з \(old.level) до \(new.level)! (Декілька рівнів підряд!)")
+            resultLines.append("   Досвід: \(new.currentExperience)/\(new.nextLevelExperience) на рівні \(new.level).")
         }
         
         // Guild comparison (if changed)
         if old.guild != new.guild {
-            let oldGuild = old.guild ?? "No Guild"
-            let newGuild = new.guild ?? "No Guild"
-            resultLines.append("🏰 Guild: \(oldGuild) → \(newGuild)")
+            let oldGuild = old.guild ?? "Без гільдії"
+            let newGuild = new.guild ?? "Без гільдії"
+            resultLines.append("🏰 Гільдія: \(oldGuild) → \(newGuild)")
         }
         
         // Max Health comparison
         if new.maxHealth != old.maxHealth {
             let diff = new.maxHealth - old.maxHealth
             let sign = diff >= 0 ? "+" : ""
-            resultLines.append("❤️ Max Health: \(old.maxHealth) → \(new.maxHealth) (\(sign)\(diff))")
+            resultLines.append("❤️ Максимальне здоровʼя: \(old.maxHealth) → \(new.maxHealth) (\(sign)\(diff))")
         }
         // Max Energy comparison
         if new.maxEnergy != old.maxEnergy {
             let diff = new.maxEnergy - old.maxEnergy
             let sign = diff >= 0 ? "+" : ""
-            resultLines.append("⚡ Max Energy: \(old.maxEnergy) → \(new.maxEnergy) (\(sign)\(diff))")
+            resultLines.append("⚡ Максимальна енергія: \(old.maxEnergy) → \(new.maxEnergy) (\(sign)\(diff))")
         }
         
         // Attack, Defense, Hero Power comparisons
         if new.attack != old.attack {
             let diff = new.attack - old.attack
             let sign = diff >= 0 ? "+" : ""
-            resultLines.append("⚔️ Attack: \(old.attack) → \(new.attack) (\(sign)\(diff))")
+            resultLines.append("⚔️ Атака: \(old.attack) → \(new.attack) (\(sign)\(diff))")
         }
         if new.defense != old.defense {
             let diff = new.defense - old.defense
             let sign = diff >= 0 ? "+" : ""
-            resultLines.append("🛡️ Defense: \(old.defense) → \(new.defense) (\(sign)\(diff))")
+            resultLines.append("🛡️ Захист: \(old.defense) → \(new.defense) (\(sign)\(diff))")
         }
         if new.heroPower != old.heroPower {
             let diff = new.heroPower - old.heroPower
             let sign = diff >= 0 ? "+" : ""
-            resultLines.append("💪 Power: \(old.heroPower) → \(new.heroPower) (\(sign)\(diff))")
+            resultLines.append("💪 Сила: \(old.heroPower) → \(new.heroPower) (\(sign)\(diff))")
         }
         
         // Gold comparison
         if new.gold != old.gold {
             let diff = new.gold - old.gold
             let sign = diff >= 0 ? "+" : ""
-            resultLines.append("💰 Gold: \(old.gold) → \(new.gold) (\(sign)\(diff))")
+            resultLines.append("💰 Золото: \(old.gold) → \(new.gold) (\(sign)\(diff))")
         }
         
         // Join all lines into one message
@@ -346,8 +346,6 @@ extension Profile {
                lhs.heroPower == rhs.heroPower &&
                lhs.currentExperience == rhs.currentExperience &&
                lhs.nextLevelExperience == rhs.nextLevelExperience &&
-               lhs.gold == rhs.gold &&
-               lhs.timestamp == rhs.timestamp
-    }
-    
+               lhs.gold == rhs.gold
+    }    
 }
