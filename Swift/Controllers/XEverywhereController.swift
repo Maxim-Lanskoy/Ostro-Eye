@@ -24,15 +24,28 @@ final class EverywhereController {
     private static func tryToParseProfile(bot: TGBot, app: Application) async {
         await bot.dispatcher.add(TGBaseHandler({ update in
             let unsafeMessage = update.message ?? update.editedMessage
-            guard let message = unsafeMessage?.text, let fromId = unsafeMessage?.from else { return }
+            guard let message = unsafeMessage, let text = message.text, let fromId = unsafeMessage?.from else { return }
             guard let chatId = update.editedMessage?.chat ?? update.message?.chat else { return }
             let session = try await User.session(for: fromId, db: app.db)
-            let containsEnergy = message.contains("🔋")
-            let containsHealth = message.contains("❤️")
+            let containsEnergy = text.contains("🔋")
+            let containsHealth = text.contains("❤️")
             let seemsProfile = containsEnergy && containsHealth
-            if message.starts(with: "⚔️") && seemsProfile {
-                
-                try await bot.sendMessage(chat: chatId, text: "🙌 Профіль оновлено!", parseMode: .html)
+            if text.starts(with: "⚔️") && seemsProfile {
+                let stamp = Date(timeIntervalSince1970: TimeInterval(message.date))
+                let adjustedStamp = Calendar.current.date(byAdding: .hour, value: 3, to: stamp) ?? stamp
+                let lastProfileUnsafe = session.profiles.last
+                let tuple = try await session.updateProfile(from: text, date: adjustedStamp, db: app.db)
+                guard let newProfile = tuple.profile else {
+                    let error = tuple.error ?? "❌ Помилка при оновленні профілю. Перевірте формат."
+                    try await bot.sendMessage(chat: chatId, text: error, parseMode: .html)
+                    return
+                }
+                if let lastProfile = lastProfileUnsafe {
+                    let compare = Profile.compareProfiles(old: lastProfile, new: newProfile)
+                    try await bot.sendMessage(chat: chatId, text: compare, parseMode: .html)
+                } else {
+                    try await bot.sendMessage(chat: chatId, text: "🙌 Профіль збережено!", parseMode: .html)
+                }
             }
         }))
     }

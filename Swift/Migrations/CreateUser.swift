@@ -19,6 +19,7 @@ struct CreateUser: AsyncMigration {
             .field("user_name", .string)
             .field("router_name", .string, .required, .sql(.default("main")))
             .field("locale", .string)
+            .field("profiles", .array, .sql(.default("[]")))
             .unique(on: "telegram_id")
             .create()
     }

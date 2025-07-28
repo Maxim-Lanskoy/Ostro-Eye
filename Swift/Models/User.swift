@@ -36,7 +36,10 @@ final public class User: Model, @unchecked Sendable {
     
     @Field(key: "last_name")
     var lastName: String?
-            
+    
+    @Field(key: "profiles")
+    var profiles: [Profile]
+                
     var name: String {
         if let firstName = firstName, let lastName = lastName {
             return "\(firstName) \(lastName)"
@@ -57,10 +60,29 @@ final public class User: Model, @unchecked Sendable {
         self.id = id
         self.telegramId = telegramId
         self.routerName = "registration"
-        self.userName = userName
-        self.firstName = firstName
-        self.lastName = lastName
-        self.createdAt = Date()
+        self.userName   = userName
+        self.firstName  = firstName
+        self.lastName   = lastName
+        self.createdAt  = Date()
+        self.profiles   = []
+    }
+    
+    typealias ProfileTyple = (profile: Profile?, error: String?)
+    
+    func updateProfile(from message: String, date: Date, db: any Database) async throws -> ProfileTyple {
+        if let profile = Profile(from: message, timestamp: date) {
+            if self.profiles.contains(profile) {
+                return (nil, "⚠️ Такий профіль вже збережено.")
+            }
+            self.profiles.append(profile)
+            if self.profiles.count > 100 {
+                self.profiles = Array(self.profiles.suffix(100))
+            }
+            try await self.update(on: db)
+            return (profile, nil)
+        } else {
+            return (nil, nil)
+        }
     }
     
     static func session(for tgUser: TGUser, locale: String = "en", db: any Database) async throws -> User {
