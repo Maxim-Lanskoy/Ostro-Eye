@@ -1,4 +1,4 @@
-# Ostromag Eye Bot 🛥️🧠
+# Ostromag Eye Bot 👁️
 
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)](https://github.com/Maxim-Lanskoy/OstromagEyeBot/actions)
 [![Swift](https://img.shields.io/badge/Swift-6.1-orange)](https://github.com/swiftlang/swift/releases/tag/swift-6.1-RELEASE)
@@ -10,7 +10,6 @@ A Telegram Bot for **Ostromag**, a Ukrainian-inspired text-based RPG. This bot a
   [ <a href="https://docs.vapor.codes/fluent/overview/#fluent">Fluent ORM / SQLite</a> ]  
   [ <a href="https://core.telegram.org/bots/api">Telegram Bot API</a> ]  
   [ <a href="https://github.com/nerzh/swift-telegram-sdk">Swift Telegram SDK</a> ]  
-  [ <a href="https://openai.com/index/gpt-4-1/">OpenAI GPT-4.1</a> ]
 </p>
 
 ## 🌟 Purpose
@@ -20,7 +19,6 @@ A Telegram Bot for **Ostromag**, a Ukrainian-inspired text-based RPG. This bot a
 * Comparing RPG player profiles visually and textually
 * Persistently tracking progress
 * Delivering personalized RPG statistics over time
-* Supporting dynamic storytelling through bot-state logic
 
 Built using modern Swift, actor-based concurrency, and a clean architecture designed for extensibility.
 
@@ -53,8 +51,8 @@ OstromagEyeBot/
 │   ├── Controllers/              # Main interaction points
 │   │   ├── ....swift
 │   │   ├── ....swift
-│   │   ├── SettingsController.swift
-│   │   └── XEverywhereController.swift
+│   │   ├── ....swift
+│   │   └── EverywhereController.swift
 │   │
 │   ├── Models/
 │   │   └── User.swift           # User metadata, progress, locale
@@ -70,11 +68,7 @@ OstromagEyeBot/
 │   ├── entrypoint.swift
 │   ├── configure.swift
 │   └── routes.swift
-├── Localizations/
-│   ├── en.json
-│   └── uk.json
 ├── SQLite/
-├── Public/
 ├── Package.swift
 ├── .env.example
 └── .gitignore
@@ -114,22 +108,8 @@ vapor run
 
 * **Player Stats Controller**: Sends visual summary of user's progress
 * **Compare Controller**: Shows progress changes over time
-* **Locale Switching**: Supports English and Ukrainian
-* **Global Commands**: `/start`, `/settings`, `/profile`, `/compare`
-* **Database-Backed**: Player data and language settings saved across sessions
-
-## 🔧 Customization
-
-To add a feature:
-
-1. Create a new controller
-2. Register it in `AllControllers.swift`
-3. Route user using:
-
-```swift
-context.session.routerName = "yourFeature"
-try await context.session.save(on: context.db)
-```
+* **Global Commands**: `/help`, `/profile`
+* **Database-Backed**: Player data and profiles saved across sessions
 
 ## 📆 Dependencies
 
