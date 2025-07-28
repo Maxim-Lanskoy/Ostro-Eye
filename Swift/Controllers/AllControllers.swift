@@ -1,12 +1,11 @@
 //
 //  AllControllers.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Foundation
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 struct Controllers {
@@ -17,9 +16,9 @@ struct Controllers {
     
     static let all: [TGControllerBase] = [ registration, mainController, settingsController ]
     
-    static func attachAllHandlers(for bot: TGBot, lingo: Lingo) async {
+    static func attachAllHandlers(for bot: TGBot) async {
         for controller in all {
-            await controller.attachHandlers(to: bot, lingo: lingo)
+            await controller.attachHandlers(to: bot)
         }
     }
 }

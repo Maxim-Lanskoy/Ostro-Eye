@@ -1,13 +1,11 @@
 //
 //  MainController.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Foundation
-import LingoVapor
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 // MARK: - Main Controller Logic
@@ -15,19 +13,15 @@ final class MainController: TGControllerBase, @unchecked Sendable {
     typealias T = MainController
         
     // MARK: - Controller Lifecycle
-    override public func attachHandlers(to bot: TGBot, lingo: Lingo) async {
+    override public func attachHandlers(to bot: TGBot) async {
         let router = Router(bot: bot) { router in
-            router[Commands.start.command()]     = onStart
-            router[Commands.settings.command()]  = onSettings
-            
-            let cancelLocales = Commands.cancel.buttonsForAllLocales(lingo: lingo)
-            for button in cancelLocales { router[button.text] = onCancel}
-            
-            let settingsLocales = Commands.settings.buttonsForAllLocales(lingo: lingo)
-            for button in settingsLocales { router[button.text] = onSettings }
-                        
-            router.unmatched                     = unmatched
-            router[.callback_query(data: nil)]   = MainController.onCallbackQuery
+            router[Commands.start.command()]      = onStart
+            router[Commands.settings.command()]   = onSettings
+            router[Commands.cancel.button.text]   = onCancel
+            router[Commands.back.button.text]     = onCancel
+            router[Commands.settings.button.text] = onSettings
+            router.unmatched                      = unmatched
+            router[.callback_query(data: nil)]    = MainController.onCallbackQuery
         }
         await processRouterForEachName(router)
     }
@@ -55,21 +49,22 @@ final class MainController: TGControllerBase, @unchecked Sendable {
     }
                 
     public func showMainMenu(context: Context, text: String? = nil) async throws {
-        let greeting = context.lingo.localize("greeting.message", locale: context.session.locale, interpolations: [
-            "full-name": "\(context.session.firstName ?? context.session.name)"
-        ])
         let text = text ??  """
-        👋 \(greeting)!
+        👋 Вітаю у боті Ostro-Eye!
+        Надішліть мені профіль із гри, щоб я його зберіг.
+        Надішліть мені профіль ще раз, щоб я їх порівняв.
         """
-        let markup = generateControllerKB(session: context.session, lingo: context.lingo)
+        let markup = generateControllerKB(session: context.session)
         try await context.bot.sendMessage(session: context.session, text: text, parseMode: .html, replyMarkup: markup)
     }
     
-    override public func generateControllerKB(session: User, lingo: Lingo) -> TGReplyMarkup? {
-        let markup = TGReplyKeyboardMarkup(keyboard: [
-            [ Commands.settings.button(for: session, lingo) ]
-        ], resizeKeyboard: true)
-        return TGReplyMarkup.replyKeyboardMarkup(markup)
+    override public func generateControllerKB(session: User) -> TGReplyMarkup? {
+        //let markup = TGReplyKeyboardMarkup(keyboard: [
+        //    [ Commands.settings.button(for: session) ]
+        //], resizeKeyboard: true)
+        //return TGReplyMarkup.replyKeyboardMarkup(markup)
+        let markup = TGReplyKeyboardRemove(removeKeyboard: true)
+        return TGReplyMarkup.replyKeyboardRemove(markup)
     }
     
     // MARK: - Custom Methods

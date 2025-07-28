@@ -1,42 +1,41 @@
 //
 //  Commands.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Foundation
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 enum Commands: String, Codable, CaseIterable {
     
-    case start = "commands.start"
-    case cancel = "commands.cancel"
-    case exit = "commands.exit"
-    case settings = "commands.settings"
-    case language = "commands.language"
+    case start  = "start"
+    case cancel = "cancel"
+    case back   = "back"
+    case exit   = "exit"
+    case settings = "settings"
     
-    func button(for session: User, _ lingo: Lingo) -> TGKeyboardButton {
-        let startText = lingo.localize(self.rawValue, locale: session.locale)
-        return TGKeyboardButton(text: "\(startText)")
+    var button: TGKeyboardButton {
+        return button(for: nil)
     }
     
-    func buttonsForAllLocales(lingo: Lingo) -> [TGKeyboardButton] {
-        var buttons: [TGKeyboardButton] = []
-        for locale in allSupportedLocales {
-            let localizedText = lingo.localize(self.rawValue, locale: locale)
-            buttons.append(TGKeyboardButton(text: localizedText))
+    func button(for session: User? = nil) -> TGKeyboardButton {
+        switch self {
+        case .start:
+            return TGKeyboardButton(text: "🎬 Розпочати")
+        case .cancel:
+            return TGKeyboardButton(text: "🙅‍♂️ Скасувати")
+        case .exit:
+            return TGKeyboardButton(text: "🚪 Вийти")
+        case .settings:
+            return TGKeyboardButton(text: "⚙️ Налаштування")
+        case .back:
+            return TGKeyboardButton(text: "🔙 Назад")
         }
-        return buttons
     }
-    
+        
     func command() -> String {
-        return self.rawValue.replacingOccurrences(of: "commands.", with: "")
-    }
-    
-    func defaultButton(lingo: Lingo) -> TGKeyboardButton {
-        let localizedText = lingo.localize(self.rawValue, locale: "en")
-        return TGKeyboardButton(text: localizedText)
+        return self.rawValue
     }
 }

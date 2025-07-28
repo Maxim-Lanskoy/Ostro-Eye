@@ -1,12 +1,11 @@
 //
 //  TGBot+Extensions.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Foundation
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 extension Context {
@@ -18,8 +17,8 @@ extension Context {
 
 protocol TGControllerProtocol {
     var routerNames: [String] { get }
-    func attachHandlers(to bot: TGBot, lingo: Lingo) async
-    func generateControllerKB(session: User, lingo: Lingo) -> TGReplyMarkup?
+    func attachHandlers(to bot: TGBot) async
+    func generateControllerKB(session: User) -> TGReplyMarkup?
 }
 
 public class TGControllerBase: @unchecked Sendable {
@@ -29,9 +28,9 @@ public class TGControllerBase: @unchecked Sendable {
         self.routerName = routerName
     }
     
-    public func generateControllerKB(session: User, lingo: Lingo) -> TGReplyMarkup? { return nil }
+    public func generateControllerKB(session: User) -> TGReplyMarkup? { return nil }
     
-    public func attachHandlers(to bot: SwiftTelegramSdk.TGBot, lingo: Lingo) async { }
+    public func attachHandlers(to bot: SwiftTelegramSdk.TGBot) async { }
     
     public func unmatched(context: Context) async throws -> Bool {
         guard let message = context.update.message else { return false }

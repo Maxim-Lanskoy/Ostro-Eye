@@ -1,13 +1,12 @@
 //
 //  routes.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Fluent
 import Vapor
-@preconcurrency import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 // MARK: - Setting up Telegram Routes.
@@ -22,9 +21,9 @@ actor RouterStore {
         backStore[key]
     }
     
-    func process(key: String, update: TGUpdate, properties: [String: User], db: any Database, lingo: Lingo) async throws {
+    func process(key: String, update: TGUpdate, properties: [String: User], db: any Database) async throws {
         guard let router = backStore[key] else { return }
-        try await router.process(update: update, properties: properties, db: db, lingo: lingo)
+        try await router.process(update: update, properties: properties, db: db)
     }
 }
 

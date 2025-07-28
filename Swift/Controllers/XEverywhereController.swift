@@ -1,6 +1,6 @@
 //
 //  EverywhereController.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
@@ -11,81 +11,27 @@ import Vapor
 final class EverywhereController {
 
     static func addHandlers(bot: TGBot, app: Application) async {
-        await showSettingsHandler(bot: bot, app: app)
-        await showButtonsHandler(bot: bot, app: app)
         await showHelpHandler(bot: bot, app: app)
+
+        // TODO: - Deprecate later.
         // await defaultBaseHandler(bot: bot)
         // await commandPingHandler(bot: bot)
         // await commandShowButtonsHandler(bot: bot)
         // await buttonsActionHandler(bot: bot)
     }
-    
-    private static func showSettingsHandler(bot: TGBot, app: Application) async {
-        await bot.dispatcher.add(TGCommandHandler(commands: ["/settings"]) { update in
-            let unsafeMessage = update.message?.from ?? update.editedMessage?.from
-            guard let fromId = unsafeMessage else {return }
-            let lingo = try app.lingoVapor.lingo()
-            let session = try await User.session(for: fromId, db: app.db)
-            let settingsController = Controllers.settingsController
-            try await settingsController.showSettingsMenuLogic(bot: bot, session: session, lingo: lingo)
-            session.routerName = settingsController.routerName
-            try await session.save(on: app.db)
-        })
-    }
-    
-    private static func showButtonsHandler(bot: TGBot, app: Application) async {
-        await bot.dispatcher.add(TGCommandHandler(commands: ["/buttons"]) { update in
-            let unsafeMessage = update.message?.from ?? update.editedMessage?.from
-            guard let fromId = unsafeMessage else {return }
-            let session = try await User.session(for: fromId, db: app.db)
-            let lingo = try app.lingoVapor.lingo()
-            if let controller = Controllers.all.first(where: { controller in
-                return controller.routerName == session.routerName
-            }), let markup = controller.generateControllerKB(session: session, lingo: lingo) {
-                let lingo = try app.lingoVapor.lingo()
-                let keyboardRestored = lingo.localize("keyboard.restored", locale: session.locale)
-                try await bot.sendMessage(session: session, text: "⌨️ \(keyboardRestored).", replyMarkup: markup)
-            }
-        })
-    }
-    
+        
     private static func showHelpHandler(bot: TGBot, app: Application) async {
         await bot.dispatcher.add(TGCommandHandler(commands: ["/help"]) { update in
             let unsafeMessage = update.message?.from ?? update.editedMessage?.from
             guard let fromId = unsafeMessage else {return }
-            let lingo = try app.lingoVapor.lingo()
-            let session = try await User.session(for: fromId, db: app.db)
-            
-            let welcome = lingo.localize("welcome", locale: session.locale)
-            let hereAreTheCommands = lingo.localize("here.are.commands", locale: session.locale)
-            let helpMainMenu = lingo.localize("help.main.menu", locale: session.locale)
-            let helpShowButtons = lingo.localize("help.show.buttons", locale: session.locale)
-            let settingsButtons = lingo.localize("settings.title", locale: session.locale)
-            
-            let howToUse = lingo.localize("how.to.use", locale: session.locale)
-            let howToShowButtons = lingo.localize("how.to.show.buttons", locale: session.locale)
-            let howToSettings = lingo.localize("how.to.settings", locale: session.locale)
-                        
-            let enjoyChatting = lingo.localize("enjoy.chatting", locale: session.locale)
-            
+            guard let chatId = update.editedMessage?.chat ?? update.message?.chat else { return }
+            // let session = try await User.session(for: fromId, db: app.db)
             let helpText = """
-            <b>TGBotSwiftTemplate Help</b>
-
-            \(welcome)!
-
-            \(hereAreTheCommands):
-
-            <b>/start</b> – 📟 \(helpMainMenu)
-            <b>/buttons</b> – ⌨️ \(settingsButtons)
-            <b>/settings</b> – ⚙️ \(helpShowButtons)
-
-            <b>\(howToUse):</b>
-            • \(howToShowButtons).
-            • \(howToSettings).
-
-            \(enjoyChatting).
+            👁️ <b>Як користуватись:</b>
+            • Надішліть ігровий профіль, щоб зберігти.
+            • Надішліть профіль ще раз, щоб порівняти.
             """
-            try await bot.sendMessage(session: session, text: helpText, parseMode: .html)
+            try await bot.sendMessage(chat: chatId, text: helpText, parseMode: .html)
         })
     }
 

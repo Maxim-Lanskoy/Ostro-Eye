@@ -1,13 +1,11 @@
 //
 //  RegistrationController.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Foundation
-import LingoVapor
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 // MARK: - Registrarion Controller Logic
@@ -15,7 +13,7 @@ final class Registration: TGControllerBase, @unchecked Sendable {
     typealias T = Registration
         
     // MARK: - Controller Lifecycle
-    override public func attachHandlers(to bot: TGBot, lingo: Lingo) async {
+    override public func attachHandlers(to bot: TGBot) async {
         let router = Router(bot: bot) { router in
             router[Commands.start.command()]     = onStart
             router.unmatched                     = unmatched
@@ -25,22 +23,14 @@ final class Registration: TGControllerBase, @unchecked Sendable {
     }
     
     public func onStart(context: Context) async throws -> Bool {
-        var greeting = "👋 Welcome to TGBotSwiftTemplate bot!\n"
-        var inlineKeyboard: [[TGInlineKeyboardButton]] = []
-        for locale in allSupportedLocales {
-            greeting.append("\n- \(context.lingo.localize("registration", locale: locale))")
-            let flag: String
-            switch locale {
-            case "en": flag = "🇬🇧"
-            case "ru-UA": flag = "🇺🇦"
-            default: flag = "🏳️"
-            }
-            let langName = context.lingo.localize("lang.name", locale: locale)
-            let button = TGInlineKeyboardButton(text: "\(flag) \(langName)", callbackData: "set_lang:\(locale)")
-            inlineKeyboard.append([button])
-        }
-        let markup = TGReplyMarkup.inlineKeyboardMarkup(TGInlineKeyboardMarkup(inlineKeyboard: inlineKeyboard))
-        try await context.bot.sendMessage(session: context.session, text: greeting, parseMode: .html, replyMarkup: markup)
+        guard let message = context.update.message else { return false }
+        let chatId = TGChatId.chat(message.chat.id)
+        let deleteParams = TGDeleteMessageParams(chatId: chatId, messageId: message.messageId)
+        try await context.bot.deleteMessage(params: deleteParams)
+        let mainController = Controllers.mainController
+        context.session.routerName = mainController.routerName
+        try await context.session.save(on: context.db)
+        try await mainController.showMainMenu(context: context)
         return true
     }
         
@@ -52,7 +42,7 @@ final class Registration: TGControllerBase, @unchecked Sendable {
         return try await onStart(context: context)
     }
     
-    override public func generateControllerKB(session: User, lingo: Lingo) -> TGReplyMarkup? {
+    override public func generateControllerKB(session: User) -> TGReplyMarkup? {
         return TGReplyMarkup.replyKeyboardRemove(TGReplyKeyboardRemove(removeKeyboard: true))
     }
 }
@@ -65,13 +55,9 @@ extension Registration {
         let chatId = TGChatId.chat(message.chat.id)
         let deleteParams = TGDeleteMessageParams(chatId: chatId, messageId: message.messageId)
         try await context.bot.deleteMessage(params: deleteParams)
-        guard let data = query.data, data.starts(with: "set_lang:") else { return false }
-        let locale = data.replacingOccurrences(of: "set_lang:", with: "")
-        let mainController = Controllers.mainController
-        context.session.locale = locale
-        context.session.routerName = mainController.routerName
+        context.session.routerName = Controllers.mainController.routerName
         try await context.session.save(on: context.db)
-        try await mainController.showMainMenu(context: context)
+        try await Controllers.mainController.showMainMenu(context: context)
         return true
     }
 }

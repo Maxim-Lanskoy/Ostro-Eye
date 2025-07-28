@@ -1,6 +1,6 @@
 //
 //  User.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
@@ -36,10 +36,7 @@ final public class User: Model, @unchecked Sendable {
     
     @Field(key: "last_name")
     var lastName: String?
-    
-    @Field(key: "locale")
-    var locale: String
-        
+            
     var name: String {
         if let firstName = firstName, let lastName = lastName {
             return "\(firstName) \(lastName)"
@@ -56,24 +53,43 @@ final public class User: Model, @unchecked Sendable {
 
     public init() {}
 
-    init(id: UUID? = nil, telegramId: Int64, locale: String, userName: String? = nil, firstName: String? = nil, lastName: String? = nil) {
+    init(id: UUID? = nil, telegramId: Int64, userName: String? = nil, firstName: String? = nil, lastName: String? = nil) {
         self.id = id
         self.telegramId = telegramId
         self.routerName = "registration"
         self.userName = userName
         self.firstName = firstName
         self.lastName = lastName
-        self.locale = locale
         self.createdAt = Date()
     }
     
     static func session(for tgUser: TGUser, locale: String = "en", db: any Database) async throws -> User {
         if let found = try await User.query(on: db).filter(\.$telegramId, .equal, tgUser.id).first() {
-            return found
+            return try await updateIfNeeded(for: found, with: tgUser, db: db)
         } else {
-            let newUser = User(telegramId: tgUser.id, locale: locale, userName: tgUser.username, firstName: tgUser.firstName, lastName: tgUser.lastName)
+            let newUser = User(telegramId: tgUser.id, userName: tgUser.username, firstName: tgUser.firstName, lastName: tgUser.lastName)
             try await newUser.save(on: db)
             return newUser
         }
+    }
+    
+    static func updateIfNeeded(for user: User, with tgUser: TGUser, db: any Database) async throws -> User {
+        var updated = false
+        if user.userName != tgUser.username {
+            user.userName = tgUser.username
+            updated = true
+        }
+        if user.firstName != tgUser.firstName {
+            user.firstName = tgUser.firstName
+            updated = true
+        }
+        if user.lastName != tgUser.lastName {
+            user.lastName = tgUser.lastName
+            updated = true
+        }
+        if updated {
+            try await user.update(on: db)
+        }
+        return user
     }
 }

@@ -1,13 +1,12 @@
 //
 //  Router.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
 
 import Foundation
 import Fluent
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 public class Router {
@@ -44,7 +43,7 @@ public class Router {
     
     public var handler: Handler {
         return { [weak self] context in
-            try await self?.process(update: context.update, db: context.db, lingo: context.lingo)
+            try await self?.process(update: context.update, db: context.db)
             return true
         }
     }
@@ -72,7 +71,7 @@ public class Router {
     
     @preconcurrency
     @discardableResult
-    public func process(update: TGUpdate, properties: [String: User] = [:], db: any Database, lingo: Lingo) async throws -> Bool {
+    public func process(update: TGUpdate, properties: [String: User] = [:], db: any Database) async throws -> Bool {
         let string = update.message?.extractCommand() ?? ""
         let scanner = Scanner(string: string)
         scanner.caseSensitive = caseSensitive
@@ -87,7 +86,7 @@ public class Router {
 				continue;
 			}
 			
-            let context = Context(bot: bot, update: update, db: db, lingo: lingo, scanner: scanner, command: command, startsWithSlash: startsWithSlash, properties: properties)
+            let context = Context(bot: bot, update: update, db: db, scanner: scanner, command: command, startsWithSlash: startsWithSlash, properties: properties)
 			let handler = path.handler
 
 			if try await handler(context) {
@@ -100,12 +99,12 @@ public class Router {
 
 		if update.message != nil && !string.isEmpty {
 			if let unmatched = unmatched {
-                let context = Context(bot: bot, update: update, db: db, lingo: lingo, scanner: scanner, command: "", startsWithSlash: false, properties: properties)
+                let context = Context(bot: bot, update: update, db: db, scanner: scanner, command: "", startsWithSlash: false, properties: properties)
 				return try await unmatched(context)
 			}
 		} else {
 			if let unsupportedContentType = unsupportedContentType {
-				let context = Context(bot: bot, update: update, db: db, lingo: lingo, scanner: scanner, command: "", startsWithSlash: false, properties: properties)
+				let context = Context(bot: bot, update: update, db: db, scanner: scanner, command: "", startsWithSlash: false, properties: properties)
 				return try await unsupportedContentType(context)
 			}
 		}

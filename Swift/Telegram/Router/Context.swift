@@ -1,6 +1,6 @@
 //
 //  Context.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
@@ -8,7 +8,6 @@
 import Foundation
 import Dispatch
 import Fluent
-import Lingo
 @preconcurrency import SwiftTelegramSdk
 
 public class Context {
@@ -16,7 +15,6 @@ public class Context {
 		
     public let bot: TGBot
     public let db: any Database
-    public let lingo: Lingo
 	public let update: TGUpdate
 	/// `update.message` shortcut. Make sure that the message exists before using it,
 	/// otherwise it will be empty. For paths supported by Router the message is guaranteed to exist.
@@ -44,10 +42,9 @@ public class Context {
     }
     public var properties: [String: User]
 	
-    init(bot: TGBot, update: TGUpdate, db: any Database, lingo: Lingo, scanner: Scanner, command: String, startsWithSlash: Bool, properties: [String: User] = [:]) {
+    init(bot: TGBot, update: TGUpdate, db: any Database, scanner: Scanner, command: String, startsWithSlash: Bool, properties: [String: User] = [:]) {
 		self.bot = bot
         self.db = db
-        self.lingo = lingo
 		self.update = update
         self.slash = startsWithSlash
         self.command = command
@@ -95,6 +92,17 @@ public class Context {
 extension TGBot {
     func sendMessage(session: User, text: String, photo: TGFileInfo? = nil, disableNotification: Bool? = nil, parseMode: TGParseMode? = nil, replyMarkup: TGReplyMarkup? = nil) async throws {
         let chatId = TGChatId.chat(session.telegramId)
+        if let fileInfo = photo {
+            let photoParams = TGSendPhotoParams(chatId: chatId, photo: fileInfo, caption: text, parseMode: parseMode, disableNotification: disableNotification, replyMarkup: replyMarkup)
+            try await self.sendPhoto(params: photoParams)
+        } else {
+            let params = TGSendMessageParams(chatId: chatId, text: text, parseMode: parseMode, disableNotification: disableNotification, replyMarkup: replyMarkup)
+            try await self.sendMessage(params: params)
+        }
+    }
+    
+    func sendMessage(chat: TGChat, text: String, photo: TGFileInfo? = nil, disableNotification: Bool? = nil, parseMode: TGParseMode? = nil, replyMarkup: TGReplyMarkup? = nil) async throws {
+        let chatId = TGChatId.chat(chat.id)
         if let fileInfo = photo {
             let photoParams = TGSendPhotoParams(chatId: chatId, photo: fileInfo, caption: text, parseMode: parseMode, disableNotification: disableNotification, replyMarkup: replyMarkup)
             try await self.sendPhoto(params: photoParams)

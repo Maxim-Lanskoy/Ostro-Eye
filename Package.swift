@@ -1,7 +1,7 @@
 //  swift-tools-version: 6.1
 //
 //  Package.swift
-//  TGBotSwiftTemplate
+//  Ostro-Eye
 //
 //  Created by Maxim Lanskoy on 13.06.2025.
 //
@@ -9,7 +9,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "TGBotSwiftTemplate",
+    name: "Ostro-Eye",
     platforms: [
        .macOS(.v14)
     ],
@@ -26,12 +26,10 @@ let package = Package(
         .package(url: "https://github.com/nerzh/swift-telegram-sdk", from: "3.9.4"),
         // 🔑 A dotenv library for Swift.
         .package(url: "https://github.com/thebarndog/swift-dotenv.git", from: "2.1.0"),
-        // 🗺️ Lingo-Vapor: A Swift package for language processing.
-        .package(url: "https://github.com/vapor-community/Lingo-Vapor.git", from: "4.4.0"),
     ],
     targets: [
         .executableTarget(
-            name: "TGBotSwiftTemplate",
+            name: "Ostro-Eye",
             dependencies: [
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
@@ -39,8 +37,7 @@ let package = Package(
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "SwiftTelegramSdk", package: "swift-telegram-sdk"),
-                .product(name: "SwiftDotenv", package: "swift-dotenv"),
-                .product(name: "LingoVapor", package: "Lingo-Vapor")
+                .product(name: "SwiftDotenv", package: "swift-dotenv")
             ],
             path: "Swift", swiftSettings: swiftSettings
         )
