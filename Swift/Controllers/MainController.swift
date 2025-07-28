@@ -36,8 +36,8 @@ final class MainController: TGControllerBase, @unchecked Sendable {
     }
     
     override func unmatched(context: Context) async throws -> Bool {
-        guard try await super.unmatched(context: context) else { return false }
-        return try await onStart(context: context)
+        // guard try await super.unmatched(context: context) else { return false }
+        return true // try await onStart(context: context)
     }
         
     private func onSettings(context: Context) async throws -> Bool {

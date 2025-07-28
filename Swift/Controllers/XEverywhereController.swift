@@ -11,6 +11,7 @@ import Vapor
 final class EverywhereController {
 
     static func addHandlers(bot: TGBot, app: Application) async {
+        await tryToParseProfile(bot: bot, app: app)
         await showHelpHandler(bot: bot, app: app)
 
         // TODO: - Deprecate later.
@@ -19,11 +20,27 @@ final class EverywhereController {
         // await commandShowButtonsHandler(bot: bot)
         // await buttonsActionHandler(bot: bot)
     }
+    
+    private static func tryToParseProfile(bot: TGBot, app: Application) async {
+        await bot.dispatcher.add(TGBaseHandler({ update in
+            let unsafeMessage = update.message ?? update.editedMessage
+            guard let message = unsafeMessage?.text, let fromId = unsafeMessage?.from else { return }
+            guard let chatId = update.editedMessage?.chat ?? update.message?.chat else { return }
+            let session = try await User.session(for: fromId, db: app.db)
+            let containsEnergy = message.contains("🔋")
+            let containsHealth = message.contains("❤️")
+            let seemsProfile = containsEnergy && containsHealth
+            if message.starts(with: "⚔️") && seemsProfile {
+                
+                try await bot.sendMessage(chat: chatId, text: "🙌 Профіль оновлено!", parseMode: .html)
+            }
+        }))
+    }
         
     private static func showHelpHandler(bot: TGBot, app: Application) async {
         await bot.dispatcher.add(TGCommandHandler(commands: ["/help"]) { update in
-            let unsafeMessage = update.message?.from ?? update.editedMessage?.from
-            guard let fromId = unsafeMessage else {return }
+            // let unsafeMessage = update.message?.from ?? update.editedMessage?.from
+            // guard let fromId = unsafeMessage else {return }
             guard let chatId = update.editedMessage?.chat ?? update.message?.chat else { return }
             // let session = try await User.session(for: fromId, db: app.db)
             let helpText = """
